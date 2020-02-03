@@ -23,7 +23,7 @@ const styles = {
   container: {
     backgroundColor: 'transparent',
     position: 'relative',
-    flex: 1
+    // flex: 1
   },
 
   wrapperIOS: {
@@ -196,7 +196,7 @@ export default class extends Component {
   autoplayTimer = null
   loopJumpTimer = null
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (!nextProps.autoplay && this.autoplayTimer)
       clearTimeout(this.autoplayTimer)
     if (nextProps.index === this.props.index) return
@@ -214,7 +214,7 @@ export default class extends Component {
     this.loopJumpTimer && clearTimeout(this.loopJumpTimer)
   }
 
-  componentWillUpdate(nextProps, nextState) {
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
     // If the index has changed, we notify the parent via the onIndexChanged callback
     if (this.state.index !== nextState.index)
       this.props.onIndexChanged(nextState.index)
@@ -226,9 +226,13 @@ export default class extends Component {
       this.autoplay()
     }
     if (this.props.children !== prevProps.children) {
-      this.setState(
-        this.initState({ ...this.props, index: this.state.index }, true)
-      )
+      if (this.props.loadMinimal && Platform.OS === 'ios') {
+        this.setState({ ...this.props, index: this.state.index })
+      } else {
+        this.setState(
+          this.initState({ ...this.props, index: this.state.index }, true)
+        )
+      }
     }
   }
 
@@ -310,11 +314,7 @@ export default class extends Component {
 
     // only update the offset in state if needed, updating offset while swiping
     // causes some bad jumping / stuttering
-    if (
-      !this.state.offset ||
-      width !== this.state.width ||
-      height !== this.state.height
-    ) {
+    if (!this.state.offset) {
       state.offset = offset
     }
 
@@ -439,7 +439,7 @@ export default class extends Component {
     // Android ScrollView will not scrollTo certain offset when props change
     const callback = async () => {
       cb()
-      if (Platform.OS === 'android') {
+      if (Platform.OS === 'android' && this.props.loop) {
         if (this.state.index === 0) {
           this.props.horizontal
             ? this.scrollView.scrollTo({
@@ -643,14 +643,14 @@ export default class extends Component {
       <View
         style={[
           {
-            backgroundColor: this.props.activeDotColor || '#007aff',
+            backgroundColor: this.props.activeDotColor || '#ffffff',
             width: 8,
             height: 8,
             borderRadius: 4,
-            marginLeft: 3,
-            marginRight: 3,
-            marginTop: 3,
-            marginBottom: 3
+            marginLeft: 4,
+            marginRight: 4,
+            // marginTop: 3,
+            // marginBottom: 3
           },
           this.props.activeDotStyle
         ]}
@@ -660,14 +660,14 @@ export default class extends Component {
       <View
         style={[
           {
-            backgroundColor: this.props.dotColor || 'rgba(0,0,0,.2)',
+            backgroundColor: this.props.dotColor || '#828282',
             width: 8,
             height: 8,
             borderRadius: 4,
-            marginLeft: 3,
-            marginRight: 3,
-            marginTop: 3,
-            marginBottom: 3
+            marginLeft: 4,
+            marginRight: 4,
+            // marginTop: 3,
+            // marginBottom: 3
           },
           this.props.dotStyle
         ]}
